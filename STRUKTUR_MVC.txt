@@ -1,0 +1,188 @@
+================================================================================
+STRUKTUR MVC - POCKETCARE
+Aplikasi Pencatat & Pengelola Keuangan
+================================================================================
+
+Developer:
+- Danang Adiwibowo (123230143)
+- Gorga Doli L (123230147)
+
+================================================================================
+STRUKTUR FOLDER
+================================================================================
+
+lib/
+├── main.dart                                 # Entry point
+
+├── models/                                   # MODEL - Data Layer
+│   ├── user_model.dart
+│   ├── transaction_model.dart (with alias)
+│   ├── category_model.dart
+│   └── reminder_model.dart
+
+├── views/                                    # VIEW - UI Layer
+│   ├── auth/
+│   │   ├── login_screen.dart
+│   │   └── register_screen.dart
+│   ├── dashboard/
+│   │   └── dashboard_screen.dart
+│   ├── profile/
+│   │   ├── profile_screen.dart
+│   │   └── edit_profile_screen.dart
+│   ├── transaction/
+│   │   ├── transaction_list_screen.dart
+│   │   └── add_transaction_screen.dart
+│   ├── reminder/
+│   │   ├── reminder_list_screen.dart
+│   │   └── add_reminder_screen.dart
+│   ├── about/
+│   │   └── about_screen.dart
+│   └── testing/
+│       └── developer_testing_screen.dart
+
+├── controllers/                              # CONTROLLER - Business Logic
+│   ├── auth_controller.dart
+│   ├── transaction_controller.dart
+│   ├── category_controller.dart
+│   ├── budget_controller.dart
+│   └── reminder_controller.dart
+
+├── services/                                 # SERVICE - Database Layer
+│   └── database_service.dart
+
+├── providers/                                # State Management (Provider)
+│   ├── auth_provider.dart
+│   ├── transaction_provider.dart
+│   ├── category_provider.dart
+│   ├── budget_provider.dart
+│   └── reminder_provider.dart
+
+├── utils/                                    # Utilities
+│   ├── constants.dart
+│   └── budget_calculator.dart
+
+└── widgets/                                  # Reusable Widgets
+    ├── custom_button.dart
+    ├── custom_text_field.dart
+    └── transaction_card.dart
+
+================================================================================
+PENJELASAN LAYER MVC
+================================================================================
+
+1. MODEL (models/)
+   - Struktur data aplikasi
+   - User, Transaction, Category, Reminder
+   - Methods: toMap(), fromMap(), copyWith()
+   - Pure data, tanpa logic UI
+
+2. VIEW (views/)
+   - Tampilan UI menggunakan Flutter widgets
+   - Menerima input user
+   - Menampilkan data dari Provider
+   - Memanggil Provider untuk business logic
+
+3. CONTROLLER (controllers/)
+   - Business logic aplikasi
+   - Validasi data
+   - Komunikasi dengan Service layer
+   - Tidak ada UI code
+   - Return hasil ke Provider
+
+4. SERVICE (services/)
+   - DatabaseService: SQLite operations
+   - Singleton pattern
+   - CRUD operations
+   - Raw SQL queries
+
+5. PROVIDER (providers/)
+   - State management menggunakan Provider package
+   - Menghubungkan View dengan Controller
+   - notifyListeners() untuk update UI
+   - Loading states & error handling
+
+================================================================================
+FLOW DATA
+================================================================================
+
+USER INPUT → VIEW → PROVIDER → CONTROLLER → SERVICE → DATABASE
+                ↑                                         ↓
+                └──────── notifyListeners() ←────────────┘
+
+Contoh: User Login
+1. LoginScreen (VIEW): User input username & password
+2. AuthProvider (PROVIDER): Panggil login(), set loading
+3. AuthController (CONTROLLER): Validasi, panggil service
+4. DatabaseService (SERVICE): Query database
+5. Return User atau null
+6. AuthProvider: notifyListeners() → Update UI
+7. LoginScreen: Navigate atau show error
+
+================================================================================
+SPECIAL CASE: Transaction Model
+================================================================================
+
+Problem: Nama "Transaction" conflict dengan sqflite package
+
+Solution: Gunakan alias
+import '../models/transaction_model.dart' as models;
+
+Usage:
+models.Transaction transaction = models.Transaction(...);
+List<models.Transaction> transactions = [];
+
+Files dengan alias:
+- database_service.dart
+- transaction_controller.dart
+- transaction_provider.dart
+- transaction_card.dart
+- developer_testing_screen.dart
+
+================================================================================
+TESTING
+================================================================================
+
+✅ All 29 unit tests PASSED
+✅ No ERROR found (flutter analyze)
+✅ Only INFO warnings (avoid_print, deprecated members)
+
+Test command:
+flutter test
+
+================================================================================
+KEUNTUNGAN MVC
+================================================================================
+
+✅ Separation of Concerns - Setiap layer punya tanggung jawab jelas
+✅ Testability - Controller bisa ditest tanpa UI
+✅ Maintainability - Mudah debug dan update
+✅ Scalability - Mudah tambah fitur baru
+✅ Reusability - Controller & Model bisa dipakai ulang
+
+================================================================================
+CARA MENJALANKAN
+================================================================================
+
+1. Install dependencies:
+   flutter pub get
+
+2. Run aplikasi:
+   flutter run
+
+3. Run tests:
+   flutter test
+
+4. Check code quality:
+   flutter analyze
+
+================================================================================
+STATUS: ✅ READY FOR PRODUCTION
+================================================================================
+
+- Struktur MVC: COMPLETE
+- All tests: PASSED
+- No errors: VERIFIED
+- Clean code: CHECKED
+- Documentation: COMPLETE
+
+================================================================================

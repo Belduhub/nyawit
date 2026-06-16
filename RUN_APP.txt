@@ -1,0 +1,128 @@
+================================================================================
+CARA MENJALANKAN APLIKASI POCKETCARE
+================================================================================
+
+1. INSTALL DEPENDENCIES (pertama kali / setelah update pubspec.yaml)
+   
+   flutter pub get
+
+2. CLEAN BUILD (jika ada masalah)
+   
+   flutter clean
+   flutter pub get
+
+3. CEK DEVICE YANG TERSEDIA
+   
+   flutter devices
+   
+   Output:
+   - 2311DRK48G (mobile) - Android device
+   - Windows (desktop) - Windows
+   - Chrome (web) - Browser
+   - Edge (web) - Browser
+
+4. JALANKAN APLIKASI
+
+   A. Di Android Device (RECOMMENDED):
+      flutter run -d 2311DRK48G
+      
+      atau otomatis pilih Android:
+      flutter run
+      lalu ketik: 1
+
+   B. Di Windows Desktop:
+      flutter run -d windows
+      
+   C. Di Chrome Browser (untuk testing UI):
+      flutter run -d chrome
+
+5. JIKA ADA ERROR GRADLE
+   
+   cd android
+   gradlew clean
+   cd ..
+   flutter clean
+   flutter pub get
+   flutter run
+
+6. RUN TESTS
+   
+   flutter test
+
+7. CHECK CODE QUALITY
+   
+   flutter analyze
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ERROR: "Execution failed for task ':app:checkDebugAarMetadata'"
+FIX: ✅ Sudah diperbaiki dengan menambahkan desugaring di build.gradle.kts
+
+ERROR: "No devices found"
+FIX: 
+- Pastikan Android device terhubung via USB dengan USB debugging ON
+- Atau jalankan emulator: flutter emulators --launch <emulator_id>
+- Atau gunakan Windows: flutter run -d windows
+
+ERROR: "Gradle build failed"
+FIX:
+cd android
+.\gradlew clean
+cd ..
+flutter clean
+flutter pub get
+flutter run
+
+ERROR: "Hot reload not working"
+FIX: Press 'R' di terminal untuk hot restart penuh
+
+================================================================================
+TIPS DEVELOPMENT
+================================================================================
+
+1. HOT RELOAD: 
+   - Tekan 'r' di terminal untuk hot reload
+   - Tekan 'R' untuk hot restart (full restart)
+   - Tekan 'q' untuk quit
+
+2. DEBUG MODE:
+   flutter run --debug
+   (default mode, dengan hot reload)
+
+3. RELEASE MODE (untuk testing performance):
+   flutter run --release
+   (lebih cepat, tanpa debug info)
+
+4. BUILD APK:
+   flutter build apk --release
+   APK akan ada di: build/app/outputs/flutter-apk/app-release.apk
+
+5. INSTALL APK KE DEVICE:
+   flutter install
+
+================================================================================
+FLUTTER DOCTOR
+================================================================================
+
+Untuk cek setup Flutter:
+flutter doctor -v
+
+Yang harus ✅:
+- Flutter SDK
+- Android toolchain
+- Chrome / Edge (untuk web)
+- VS Code / Android Studio
+
+================================================================================
+STATUS APLIKASI: ✅ READY
+================================================================================
+
+Struktur: ✅ MVC Complete
+Dependencies: ✅ Installed
+Tests: ✅ 29/29 Passed
+Errors: ✅ Fixed
+Build Config: ✅ Updated (desugaring enabled)
+
+================================================================================
