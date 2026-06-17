@@ -12,8 +12,10 @@ class BudgetCalculator {
 
   /// Menentukan status budget berdasarkan persentase
   /// Returns: 'safe', 'warning', atau 'danger'
+  /// Validasi boundary untuk mencegah logical flaw
   static String getBudgetStatus(double expense, double target) {
-    if (target <= 0) return 'safe';
+    // Sanity check: validasi input negatif dan target invalid
+    if (expense < 0 || target <= 0) return 'safe';
     
     double percentage = expense / target;
     

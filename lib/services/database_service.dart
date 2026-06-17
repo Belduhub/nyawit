@@ -15,7 +15,7 @@ class DatabaseService {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('pocketcare.db');
+    _database = await _initDB('nyawit.db');
     return _database!;
   }
 
@@ -130,9 +130,15 @@ class DatabaseService {
     ''');
   }
 
-  // Hash password for security
-  String _hashPassword(String password) {
-    var bytes = utf8.encode(password);
+  // Hash password for security with salt
+  // Salt mencegah rainbow table attacks sesuai OWASP Mobile Top 10
+  String _hashPassword(String password, [String? username]) {
+    // Tambahkan salt unik untuk setiap user
+    const appSalt = 'nyawit_secure_2024'; // Application-wide salt
+    final userSalt = username ?? ''; // User-specific salt
+    final saltedPassword = password + appSalt + userSalt;
+    
+    var bytes = utf8.encode(saltedPassword);
     var digest = sha256.convert(bytes);
     return digest.toString();
   }
@@ -140,7 +146,8 @@ class DatabaseService {
   // ========== USER OPERATIONS ==========
   Future<User?> createUser(User user) async {
     final db = await database;
-    final hashedUser = user.copyWith(password: _hashPassword(user.password));
+    // Hash password dengan username sebagai salt
+    final hashedUser = user.copyWith(password: _hashPassword(user.password, user.username));
     
     try {
       // Check if username already exists
@@ -165,7 +172,8 @@ class DatabaseService {
 
   Future<User?> loginUser(String username, String password) async {
     final db = await database;
-    final hashedPassword = _hashPassword(password);
+    // Hash password dengan username sebagai salt
+    final hashedPassword = _hashPassword(password, username);
 
     final maps = await db.query(
       'users',
@@ -226,7 +234,9 @@ class DatabaseService {
 
       // Only update password if provided
       if (newPassword != null && newPassword.isNotEmpty) {
-        updates['password'] = _hashPassword(newPassword);
+        // Gunakan username yang baru (jika diupdate) atau yang lama sebagai salt
+        final saltUsername = newUsername ?? (await getUserById(userId))?.username ?? '';
+        updates['password'] = _hashPassword(newPassword, saltUsername);
       }
 
       final rowsAffected = await db.update(
@@ -499,20 +509,36 @@ class DatabaseService {
     return results.length;
   }
 
-  // Clear all transactions (for testing cleanup)
+  // Clear all test data (transactions, budgets, reminders) untuk testing cleanup
+  // Menggunakan batch untuk efisiensi dan menghindari data residual
   Future<int> clearAllTransactions(int userId) async {
     final db = await database;
-    return await db.delete(
-      'transactions',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-    );
+    final batch = db.batch();
+    
+    // Hapus semua transactions
+    batch.delete('transactions', where: 'user_id = ?', whereArgs: [userId]);
+    
+    // Hapus semua budgets (data testing bisa bikin banyak budget entries)
+    batch.delete('budgets', where: 'user_id = ?', whereArgs: [userId]);
+    
+    // Hapus semua reminders (data testing bisa bikin banyak reminder entries)
+    batch.delete('reminders', where: 'user_id = ?', whereArgs: [userId]);
+    
+    final results = await batch.commit();
+    // Hitung total rows yang dihapus
+    int totalDeleted = 0;
+    for (var result in results) {
+      if (result is int) {
+        totalDeleted += result;
+      }
+    }
+    return totalDeleted;
   }
 
   // Delete entire database (for fresh start)
   Future<void> deleteDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'pocketcare.db');
+    final path = join(dbPath, 'nyawit.db');
     await databaseFactory.deleteDatabase(path);
     _database = null;
   }

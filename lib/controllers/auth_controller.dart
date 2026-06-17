@@ -19,11 +19,23 @@ class AuthController {
     required String password,
     required String fullName,
   }) async {
+    // Validasi input di layer Controller sesuai kaidah MVC
+    if (username.isEmpty || password.isEmpty || fullName.isEmpty) {
+      _errorMessage = 'Semua field harus diisi';
+      return false;
+    }
+    
+    // Validasi panjang password
+    if (password.length < 6) {
+      _errorMessage = 'Password minimal 6 karakter';
+      return false;
+    }
+    
     try {
       final user = User(
-        username: username,
+        username: username.trim(),
         password: password,
-        fullName: fullName,
+        fullName: fullName.trim(),
       );
 
       final createdUser = await _dbService.createUser(user);
@@ -46,8 +58,14 @@ class AuthController {
 
   /// Login user
   Future<bool> login(String username, String password) async {
+    // Validasi input di layer Controller sesuai kaidah MVC
+    if (username.isEmpty || password.isEmpty) {
+      _errorMessage = 'Username dan password harus diisi';
+      return false;
+    }
+    
     try {
-      final user = await _dbService.loginUser(username, password);
+      final user = await _dbService.loginUser(username.trim(), password);
       
       if (user != null) {
         _currentUser = user;
