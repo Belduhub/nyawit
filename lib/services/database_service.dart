@@ -26,6 +26,11 @@ class DatabaseService {
     return await openDatabase(
       path,
       version: 3,
+      // CRITICAL: Aktifkan Foreign Key Constraints di SQLite
+      // Tanpa ini, CASCADE DELETE tidak akan berfungsi!
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -132,10 +137,12 @@ class DatabaseService {
 
   // Hash password for security with salt
   // Salt mencegah rainbow table attacks sesuai OWASP Mobile Top 10
-  String _hashPassword(String password, [String? username]) {
+  // CRITICAL: Menggunakan created_at sebagai user-specific salt (immutable)
+  // Tidak pakai username karena username bisa berubah (salt desynchronization bug)
+  String _hashPassword(String password, String userCreatedAtString) {
     // Tambahkan salt unik untuk setiap user
     const appSalt = 'nyawit_secure_2024'; // Application-wide salt
-    final userSalt = username ?? ''; // User-specific salt
+    final userSalt = userCreatedAtString; // User-specific salt (immutable timestamp string)
     final saltedPassword = password + appSalt + userSalt;
     
     var bytes = utf8.encode(saltedPassword);
@@ -146,8 +153,10 @@ class DatabaseService {
   // ========== USER OPERATIONS ==========
   Future<User?> createUser(User user) async {
     final db = await database;
-    // Hash password dengan username sebagai salt
-    final hashedUser = user.copyWith(password: _hashPassword(user.password, user.username));
+    // Hash password dengan created_at string sebagai salt (immutable)
+    final hashedUser = user.copyWith(
+      password: _hashPassword(user.password, user.createdAt.toIso8601String()),
+    );
     
     try {
       // Check if username already exists
@@ -172,19 +181,28 @@ class DatabaseService {
 
   Future<User?> loginUser(String username, String password) async {
     final db = await database;
-    // Hash password dengan username sebagai salt
-    final hashedPassword = _hashPassword(password, username);
-
-    final maps = await db.query(
+    
+    // Ambil user dulu untuk dapat created_at sebagai salt
+    final userMaps = await db.query(
       'users',
-      where: 'username = ? AND password = ?',
-      whereArgs: [username, hashedPassword],
+      where: 'username = ?',
+      whereArgs: [username],
     );
-
-    if (maps.isNotEmpty) {
-      return User.fromMap(maps.first);
+    
+    if (userMaps.isEmpty) {
+      return null; // Username tidak ditemukan
     }
-    return null;
+    
+    final user = User.fromMap(userMaps.first);
+    // Hash password dengan created_at string sebagai salt (immutable)
+    final hashedPassword = _hashPassword(password, user.createdAt.toIso8601String());
+    
+    // Verifikasi password
+    if (user.password == hashedPassword) {
+      return user;
+    }
+    
+    return null; // Password salah
   }
 
   Future<User?> getUserById(int id) async {
@@ -234,9 +252,12 @@ class DatabaseService {
 
       // Only update password if provided
       if (newPassword != null && newPassword.isNotEmpty) {
-        // Gunakan username yang baru (jika diupdate) atau yang lama sebagai salt
-        final saltUsername = newUsername ?? (await getUserById(userId))?.username ?? '';
-        updates['password'] = _hashPassword(newPassword, saltUsername);
+        // CRITICAL: Gunakan created_at sebagai salt (immutable)
+        // Tidak terpengaruh perubahan username (fix salt desynchronization bug)
+        final user = await getUserById(userId);
+        if (user != null) {
+          updates['password'] = _hashPassword(newPassword, user.createdAt.toIso8601String());
+        }
       }
 
       final rowsAffected = await db.update(
