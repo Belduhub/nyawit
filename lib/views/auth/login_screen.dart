@@ -35,10 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
+        print('✅ Login success! Navigating to MainScreen...');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainScreen()),
         );
       } else if (mounted) {
+        print('❌ Login failed: ${authProvider.errorMessage}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.errorMessage ?? 'Login gagal'),

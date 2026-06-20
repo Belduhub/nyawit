@@ -163,8 +163,18 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Judul tidak boleh kosong';
                     }
+                    if (value.trim().length > 40) {
+                      return 'Judul maksimal 40 karakter';
+                    }
                     return null;
                   },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Maksimal 40 karakter',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 
                 const SizedBox(height: 16),

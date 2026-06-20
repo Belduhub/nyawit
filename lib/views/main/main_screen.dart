@@ -24,6 +24,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('🏠 MainScreen building... Current index: $_currentIndex');
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

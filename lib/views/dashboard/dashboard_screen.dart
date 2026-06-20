@@ -339,18 +339,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
         title: Text('Atur Target Bulanan', style: AppTextStyles.heading3),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          style: AppTextStyles.bodyLarge,
-          decoration: InputDecoration(
-            labelText: 'Target Pengeluaran',
-            labelStyle: AppTextStyles.bodyMedium,
-            prefixText: 'Rp ',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: AppTextStyles.bodyLarge,
+              decoration: InputDecoration(
+                labelText: 'Target Pengeluaran',
+                labelStyle: AppTextStyles.bodyMedium,
+                prefixText: 'Rp ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              'Maksimal Rp 5.000.000.000',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -360,19 +373,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
           TextButton(
             onPressed: () async {
               final value = double.tryParse(controller.text);
-              if (value != null && value > 0) {
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                final now = DateTime.now();
-                await budgetProvider.setMonthlyTarget(
-                  authProvider.currentUser!.id!,
-                  value,
-                  now.month,
-                  now.year,
+              
+              // Validation
+              if (value == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Target harus berupa angka'),
+                    backgroundColor: AppColors.accentRed,
+                  ),
                 );
-                if (mounted) {
-                  Navigator.pop(context);
+                return;
+              }
+              
+              if (value <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Target harus lebih dari 0'),
+                    backgroundColor: AppColors.accentRed,
+                  ),
+                );
+                return;
+              }
+              
+              if (value > 5000000000) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Target maksimal Rp 5.000.000.000'),
+                    backgroundColor: AppColors.accentRed,
+                  ),
+                );
+                return;
+              }
+              
+              // Save budget target
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              final now = DateTime.now();
+              final success = await budgetProvider.setMonthlyTarget(
+                authProvider.currentUser!.id!,
+                value,
+                now.month,
+                now.year,
+              );
+              
+              if (mounted) {
+                Navigator.pop(context);
+                if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Target berhasil diatur')),
+                    const SnackBar(
+                      content: Text('Target berhasil diatur'),
+                      backgroundColor: AppColors.accentGreen,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Gagal mengatur target'),
+                      backgroundColor: AppColors.accentRed,
+                    ),
                   );
                 }
               }

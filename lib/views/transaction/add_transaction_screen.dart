@@ -77,6 +77,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         return;
       }
 
+      // Validate custom category if "Lainnya" is selected
+      if (_selectedCategory!.name == 'Lainnya' && 
+          _customCategoryController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nama kategori baru tidak boleh kosong'),
+            backgroundColor: AppColors.accentRed,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -88,9 +100,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final userId = authProvider.currentUser!.id!;
       Category? categoryToUse = _selectedCategory;
 
-      // If "Lainnya" is selected and custom category is entered
+      // If "Lainnya" is selected, create new custom category (now mandatory)
       if (_selectedCategory!.name == 'Lainnya' && 
-          _showCustomCategoryField && 
           _customCategoryController.text.trim().isNotEmpty) {
         
         // Create new custom category
@@ -110,6 +121,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             (cat) => cat.name == _customCategoryController.text.trim(),
             orElse: () => _selectedCategory!,
           );
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Gagal membuat kategori baru'),
+                backgroundColor: AppColors.accentRed,
+              ),
+            );
+          }
+          return;
         }
       }
 
@@ -122,7 +146,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         amount: amount,
         type: _selectedType,
         date: _selectedDate,
-        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        note: _noteController.text.trim(), // Required field now
       );
 
       setState(() {
@@ -211,8 +235,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Nominal tidak boleh kosong';
                     }
-                    if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                    final amount = double.tryParse(value);
+                    if (amount == null || amount <= 0) {
                       return 'Nominal harus lebih dari 0';
+                    }
+                    if (amount > 1000000000) {
+                      return 'Nominal maksimal Rp 1.000.000.000';
                     }
                     return null;
                   },
@@ -278,15 +306,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _customCategoryController,
-                    label: 'Nama Kategori Baru (Opsional)',
+                    label: 'Nama Kategori Baru',
                     hint: 'Masukkan nama kategori baru',
                     prefixIcon: const Icon(Icons.category, color: AppColors.textSecondary),
+                    validator: (value) {
+                      if (_showCustomCategoryField && (value == null || value.trim().isEmpty)) {
+                        return 'Nama kategori tidak boleh kosong';
+                      }
+                      if (value != null && value.trim().length > 30) {
+                        return 'Nama kategori maksimal 30 karakter';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Kosongkan jika ingin menggunakan kategori "Lainnya"',
+                    'Buat kategori baru (maksimal 30 karakter)',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.accentYellow,
+                      color: AppColors.accentGreen,
                     ),
                   ),
                 ],
@@ -332,10 +369,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 // Note Field
                 CustomTextField(
                   controller: _noteController,
-                  label: 'Catatan (Opsional)',
-                  hint: 'Tambahkan catatan',
+                  label: 'Catatan',
+                  hint: 'Tambahkan catatan transaksi',
                   maxLines: 3,
                   prefixIcon: const Icon(Icons.note, color: AppColors.textSecondary),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Catatan tidak boleh kosong';
+                    }
+                    if (value.trim().length > 50) {
+                      return 'Catatan maksimal 50 karakter';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Maksimal 50 karakter',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 
                 const SizedBox(height: 32),

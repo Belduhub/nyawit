@@ -86,10 +86,10 @@ class _DeveloperTestingScreenState extends State<DeveloperTestingScreen> {
       
       setState(() {
         _loadTestDuration = duration;
-        _loadTestResult = '✅ Load Test Berhasil!\n\n'
-            '📊 Data yang diinsert: ${AppConstants.loadTestCount} transaksi\n'
-            '⏱️ Waktu eksekusi: $duration ms (${(duration / 1000).toStringAsFixed(2)} detik)\n'
-            '⚡ Kecepatan: ${(AppConstants.loadTestCount / (duration / 1000)).toStringAsFixed(2)} transaksi/detik';
+        _loadTestResult = 'Load Test Berhasil!\n\n'
+            'Data yang diinsert: ${AppConstants.loadTestCount} transaksi\n'
+            'Waktu eksekusi: $duration ms (${(duration / 1000).toStringAsFixed(2)} detik)\n'
+            'Kecepatan: ${(AppConstants.loadTestCount / (duration / 1000)).toStringAsFixed(2)} transaksi/detik';
         _isLoadTesting = false;
       });
       
@@ -103,7 +103,7 @@ class _DeveloperTestingScreenState extends State<DeveloperTestingScreen> {
       }
     } catch (e) {
       setState(() {
-        _loadTestResult = '❌ Load Test Gagal!\n\nError: $e';
+        _loadTestResult = 'Load Test Gagal!\n\nError: $e';
         _isLoadTesting = false;
       });
     }
@@ -173,7 +173,7 @@ class _DeveloperTestingScreenState extends State<DeveloperTestingScreen> {
         // Update progress
         if (mounted) {
           setState(() {
-            _stressTestResult = '⏳ Progress: ${((batch + 1) / totalBatches * 100).toStringAsFixed(1)}%\n'
+            _stressTestResult = 'Progress: ${((batch + 1) / totalBatches * 100).toStringAsFixed(1)}%\n'
                 'Batch ${batch + 1} of $totalBatches completed...';
           });
         }
@@ -184,11 +184,11 @@ class _DeveloperTestingScreenState extends State<DeveloperTestingScreen> {
       
       setState(() {
         _stressTestDuration = duration;
-        _stressTestResult = '✅ Stress Test Berhasil!\n\n'
-            '📊 Data yang diinsert: ${AppConstants.stressTestCount} transaksi\n'
-            '⏱️ Waktu eksekusi: $duration ms (${(duration / 1000).toStringAsFixed(2)} detik)\n'
-            '⚡ Kecepatan: ${(AppConstants.stressTestCount / (duration / 1000)).toStringAsFixed(2)} transaksi/detik\n\n'
-            '💡 Tip: Pantau penggunaan RAM/CPU melalui Flutter DevTools';
+        _stressTestResult = 'Stress Test Berhasil!\n\n'
+            'Data yang diinsert: ${AppConstants.stressTestCount} transaksi\n'
+            'Waktu eksekusi: $duration ms (${(duration / 1000).toStringAsFixed(2)} detik)\n'
+            'Kecepatan: ${(AppConstants.stressTestCount / (duration / 1000)).toStringAsFixed(2)} transaksi/detik\n\n'
+            'Tip: Pantau penggunaan RAM/CPU melalui Flutter DevTools';
         _isStressTesting = false;
       });
       
@@ -202,7 +202,7 @@ class _DeveloperTestingScreenState extends State<DeveloperTestingScreen> {
       }
     } catch (e) {
       setState(() {
-        _stressTestResult = '❌ Stress Test Gagal!\n\nError: $e';
+        _stressTestResult = 'Stress Test Gagal!\n\nError: $e';
         _isStressTesting = false;
       });
     }

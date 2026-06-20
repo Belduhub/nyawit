@@ -306,6 +306,7 @@ class DatabaseService {
     final incomeCategories = [
       Category(name: 'Gaji', type: 'income', isDefault: true, userId: userId),
       Category(name: 'Uang Jajan', type: 'income', isDefault: true, userId: userId),
+      Category(name: 'Lainnya', type: 'income', isDefault: true, userId: userId),
     ];
 
     final expenseCategories = [
